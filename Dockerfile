@@ -8,8 +8,8 @@ RUN chmod a+x /usr/local/bin/*
 WORKDIR /etc/ocserv
 
 # china timezone
-RUN echo "Asia/Shanghai" > /etc/timezone \
-    && dpkg-reconfigure -f noninteractive tzdata
+# RUN echo "Asia/Shanghai" > /etc/timezone \
+#     && dpkg-reconfigure -f noninteractive tzdata
 
 # install compiler, dependencies, tools , dnsmasq
 RUN apt-get update && apt-get install -y \
@@ -18,8 +18,16 @@ RUN apt-get update && apt-get install -y \
     libnl-route-3-dev libkrb5-dev liboath-dev libprotobuf-c0-dev libtalloc-dev \
     libhttp-parser-dev libpcl1-dev libopts25-dev autogen pkg-config nettle-dev \
     protobuf-c-compiler gnutls-bin gperf liblockfile-bin nuttcp lcov iptables \
-    unzip dnsmasq \
+    unzip dnsmasq python-pip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install some python env for redius
+RUN pip install pyrad==2.0 \
+    && cd /usr/local/ \
+    && wget https://github.com/KidFeng/ocserv_radius_accounting/archive/master.tar.gz \
+    && tar xvzf master.tar.gz \
+    && mv ocserv_radius_accounting-master ocserv_accounting
+   
 
 # configuration dnsmasq
 RUN mkdir -p /temp && cd /temp \
@@ -51,6 +59,16 @@ RUN mkdir -p /temp && cd /temp \
     && ./configure --prefix=/usr --sysconfdir=/etc --enable-legacy-compat \
     && make && make install \
     && cd / && rm -rf /temp
+
+# configuration freeradius-client
+RUN mkdir -p /tmp && cd /tmp \
+    && wget ftp://ftp.freeradius.org/pub/freeradius/freeradius-client-1.1.7.tar.gz \
+    && tar zxvf freeradius-client-1.1.7.tar.gz \
+    && cd freeradius-client-1.1.7 \
+    && ./configure && make && make install \
+    && cd / && rm -rf /temp \
+    && cp /usr/local/ocserv_accounting/dictionary.anyconnect /usr/local/etc/radiusclient/dictionary.anyconnect \
+    && echo "$INCLUDE dictionary.anyconnect" >> /usr/local/etc/radiusclient/dictionary
 
 # configuration ocserv
 RUN mkdir -p /temp && cd /temp \

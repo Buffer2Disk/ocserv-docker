@@ -27,6 +27,19 @@ listening (UDP) on [::]:443...
 * `docker run -d --privileged --name ocserv-docker -v ~/ocserv-docker/ocserv:/etc/ocserv -p 443:443/tcp ocserv-docker`  :  ocserv 的一些功能需要 Docker 在 privileged 权限下处理
 * `docker logs ocserv-docker` : 查看运行日志, 检查是否正常运行(可重复执行).
 
+## 使用Redius进行验证
+添加了使用 `redius` 进行认证 可以快速的部署 `Anyconnect` 的后端
+
+使用方法
+* 编辑 `~ocserv-docker/ocserv/ocserv.conf` 
+  - 将 `auth = "plain[passwd=/etc/ocserv/ocpasswd]` 注释
+  - 将 `auth = "radius[config=/usr/local/etc/radiusclient/radiusclient.conf,groupconfig=true]"`取消注释
+  - 将文件末尾两行 `connect-script` 和 `disconnect-script` 取消注释
+* 运行的时候添加环境变量
+  - `ENABLE_RADIUS` 设置为 True 打开`REDIUS`功能
+  - `RADIUS_SERVER` 设置为远程Redius服务器地址
+  - `RADIUS_SECRET` 设置为链接Redius用的密匙
+
 ## 使用
 * 初始化好的两个账户:  wyatt:616  holly:525
 * 如果主服务器上开启了 iptables, 一定要记得将 443 端口的 tcp 与 udp 都开放

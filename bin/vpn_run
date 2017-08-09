@@ -4,6 +4,18 @@
 # Run the OpenConnect server normally
 #
 
+# Injurt radius config if enable radius
+if [ ! -z "$ENABLE_RADIUS" ]; then
+	echo "Init radius server config"
+	sed -i "s/authserver \tlocalhost/authserver \t$RADIUS_SERVER:1812/g" /usr/local/etc/radiusclient/radiusclient.conf
+	sed -i "s/acctserver \tlocalhost/acctserver \t$RADIUS_SERVER:1813/g" /usr/local/etc/radiusclient/radiusclient.conf
+	echo "$RADIUS_SERVER $RADIUS_SECRET" >> /usr/local/etc/radiusclient/servers
+	
+	sed -i "s/your_server_ip/$RADIUS_SERVER/g" /usr/local/ocserv_accounting/radacct.py
+	sed -i "s/your_server_secret/$RADIUS_SECRET/g" /usr/local/ocserv_accounting/radacct.py
+	sed -i "s/\/path\/to\/dictionary/\/usr\/local\/ocserv_accounting\/dictionary/g" /usr/local/ocserv_accounting/radacct.py
+fi
+
 # start dnsmasq
 dnsmasq -C /usr/local/etc/dnsmasq.conf
 
