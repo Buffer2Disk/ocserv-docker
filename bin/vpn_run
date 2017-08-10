@@ -4,6 +4,19 @@
 # Run the OpenConnect server normally
 #
 
+# Auto fill config if not exsit it
+if [ ! -d "/etc/ocserv" ]; then 
+	mkdir -p /etc/ocserv
+fi
+
+if [ ! -f "/etc/ocserv/ocserv.conf" ]; then 
+	wget https://github.com/Indexyz/ocserv-docker/raw/master/ocserv/ocserv.conf -O /etc/ocserv/ocserv.conf
+fi
+
+if [ ! -f "/etc/ocserv/ocpasswd" ]; then
+	wget https://github.com/Indexyz/ocserv-docker/raw/master/ocserv/ocpasswd -O /etc/ocserv/ocpasswd
+fi
+
 # Injurt radius config if enable radius
 if [ ! -z "$ENABLE_RADIUS" ]; then
 	echo "Init radius server config"
